@@ -11,6 +11,9 @@ const db = require('./database.js');
 const app = express();
 const PORT = process.env.PORT || 3200;
 
+// import middleware dari authMiddleware.js
+const authenticateToken = require('./middleware/authMiddleware.js');
+
 // middleware
 app.use(cors());
 app.use(express.json());
@@ -174,7 +177,8 @@ app.get("/directors/:id", (req, res) => {
     });
 });
 
-app.post("/movies", (req, res) => {
+app.post("/movies", authenticateToken, (req, res) => {
+    console.log('Request POST /movies oleh user: ', req.user.username);
     const { title, director, year } = req.body;
     if (!title || !director || !year) {
         return res.status(404).json({
@@ -202,7 +206,8 @@ app.post("/movies", (req, res) => {
 });
 
 
-app.post("/directors", (req, res) => {
+app.post("/directors", authenticateToken, (req, res) => {
+    console.log('Request POST /directors oleh user: ', req.user.username);
     const { name, birthYear } = req.body;
     if (!name || !birthYear) {
         return res.status(404).json({
@@ -228,7 +233,7 @@ app.post("/directors", (req, res) => {
     });
 });
 
-app.put("/movies/:id", (req, res) => {
+app.put("/movies/:id", authenticateToken, (req, res) => {
     const { title, director, year } = req.body;
     const sql = "UPDATE movies SET title = ?, director = ?, year = ? WHERE id = ?";
     db.run(sql, [title, director, year, req.params.id], (err) => {
@@ -254,7 +259,7 @@ app.put("/movies/:id", (req, res) => {
     });
 });
 
-app.put("/directors/:id", (req, res) => {
+app.put("/directors/:id", authenticateToken, (req, res) => {
     const { name, birthYear } = req.body;
     const sql = "UPDATE directors SET name = ?, birthYear = ? WHERE id = ?";
     db.run(sql, [name, birthYear, req.params.id], (err) => {
@@ -279,7 +284,7 @@ app.put("/directors/:id", (req, res) => {
     });
 });
 
-app.delete('/movies/:id', (req, res) => {
+app.delete('/movies/:id', authenticateToken, (req, res) => {
     const sql = "DELETE FROM movies WHERE id = ?";
     db.run(sql, [req.params.id], (err) => {
         if (err) {
@@ -298,7 +303,7 @@ app.delete('/movies/:id', (req, res) => {
     });
 });
 
-app.delete('/directors/:id', (req, res) => {
+app.delete('/directors/:id', authenticateToken, (req, res) => {
     const sql = "DELETE FROM directors WHERE id = ?";
     db.run(sql, [req.params.id], (err) => {
         if (err) {
